@@ -179,19 +179,22 @@ int main()
 
 	Text playGame, quit;
 	playGame.setFont(font);
-	//playGame.setColor(Color::White);
 	playGame.setFillColor(Color::White);
 	playGame.setString("PLAY GAME");
-	playGame.setPosition(240, 240);
+	playGame.setPosition(260, 250);
+
 	quit.setFont(font);
 	quit.setFillColor(Color::White);
 	quit.setString("QUIT");
-	quit.setPosition(240, 300);
+	quit.setPosition(310, 340);
 	
 	Sprite sMenu(mainmenu);
 	Sprite button1(button);
 	Sprite button2(button);
 	Sprite s(blocks);
+
+	button1.setPosition(240, 240);
+	button2.setPosition(240, 330);
 
 	s.setTextureRect(IntRect(0, 0, 30, 30));
 	while (window.isOpen())
@@ -205,8 +208,6 @@ int main()
 		} //while
 		//window.clear(Color::White);
 		window.draw(sMenu);
-		button1.setPosition(240, 240);
-		button2.setPosition(240, 330);
 		window.draw(button1);
 		window.draw(playGame);
 		window.draw(button2);
