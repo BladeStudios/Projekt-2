@@ -77,9 +77,9 @@ int drawMainMenu()
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
-			if (event.type == sf::Event::Closed)
+			if (event.type == Event::Closed)
 				window.close();
-			if (event.type == sf::Event::KeyPressed && (event.key.code == Keyboard::Down || event.key.code == Keyboard::Up))
+			if (event.type == Event::KeyPressed && (event.key.code == Keyboard::Down || event.key.code == Keyboard::Up))
 			{
 				if (quitOption)
 				{
@@ -95,6 +95,41 @@ int drawMainMenu()
 					playGame.setFillColor(Color::White);
 					quit.setFillColor(Color::Red);
 				}
+			}
+			if (event.type == Event::KeyPressed && event.key.code == Keyboard::Enter)
+			{
+				if (playOption)
+					return 1;
+				else //quitOption
+					return 2;
+			}
+			if (event.type == Event::MouseMoved)
+			{
+				if ((Mouse::getPosition(window).x >= button1.getPosition().x) && (Mouse::getPosition(window).x <= button1.getPosition().x + 210)
+					&& (Mouse::getPosition(window).y >= button1.getPosition().y) && (Mouse::getPosition(window).y <= button1.getPosition().y + 60)) //playOption
+				{
+					playOption = true;
+					quitOption = false;
+					playGame.setFillColor(Color::Red);
+					quit.setFillColor(Color::White);
+				}
+				else if ((Mouse::getPosition(window).x >= button2.getPosition().x) && (Mouse::getPosition(window).x <= button2.getPosition().x + 210)
+					&& (Mouse::getPosition(window).y >= button2.getPosition().y) && (Mouse::getPosition(window).y <= button2.getPosition().y + 60)) //playOption
+				{
+					playOption = false;
+					quitOption = true;
+					playGame.setFillColor(Color::White);
+					quit.setFillColor(Color::Red);
+				}
+			}
+			if (event.type == Event::MouseButtonPressed && event.key.code == Mouse::Left)
+			{
+				if ((Mouse::getPosition(window).x >= button1.getPosition().x) && (Mouse::getPosition(window).x <= button1.getPosition().x + 210)
+					&& (Mouse::getPosition(window).y >= button1.getPosition().y) && (Mouse::getPosition(window).y <= button1.getPosition().y + 60)) //playOption
+					return 1;
+				else if ((Mouse::getPosition(window).x >= button2.getPosition().x) && (Mouse::getPosition(window).x <= button2.getPosition().x + 210)
+					&& (Mouse::getPosition(window).y >= button2.getPosition().y) && (Mouse::getPosition(window).y <= button2.getPosition().y + 60)) //playOption
+					return 2;
 			}
 
 		} //while
@@ -223,7 +258,6 @@ int drawMainMenu()
 		}
 	}
 */
-return 1;
 }
 /*
 void clearArray()
