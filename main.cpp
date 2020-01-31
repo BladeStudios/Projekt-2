@@ -15,25 +15,9 @@
 using namespace std;
 using namespace sf;
 
-void setFontSize(int FontSize)
-{
-	/*CONSOLE_FONT_INFOEX info = { 0 };
-	info.cbSize = sizeof(info);
-	info.dwFontSize.Y = FontSize;
-	info.dwFontSize.X = FontSize;
-	info.FontWeight = FW_NORMAL;
-	wcscpy_s(info.FaceName, L"Lucida Console");
-	SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), NULL, &info);*/
-}
-
-void cleanScreen()
-{
-	system("cls");
-}
-
 int drawMainMenu()
 {
-	RenderWindow window(sf::VideoMode(690, 540), "Tetris");
+	RenderWindow window(VideoMode(690, 540), "Tetris");
 	window.setVerticalSyncEnabled(true);
 	window.setFramerateLimit(60);
 
@@ -41,8 +25,6 @@ int drawMainMenu()
 	mainmenu.loadFromFile("mainmenu.png");
 	Texture button;
 	button.loadFromFile("button-bg.png");
-	Texture blocks;
-	blocks.loadFromFile("texture.png");
 
 	Font font;
 	font.loadFromFile("Arial.ttf");
@@ -62,12 +44,9 @@ int drawMainMenu()
 	Sprite sMenu(mainmenu);
 	Sprite button1(button);
 	Sprite button2(button);
-	Sprite s(blocks);
 
 	button1.setPosition(240, 240);
 	button2.setPosition(240, 330);
-
-	s.setTextureRect(IntRect(0, 0, 30, 30));
 
 	bool playOption = true;
 	bool quitOption = false;

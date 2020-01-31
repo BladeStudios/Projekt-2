@@ -1,3 +1,4 @@
+#include <SFML/Graphics.hpp>
 #include "board.h"
 #include "block.h"
 #include "extern.h"
@@ -20,6 +21,7 @@ int level = 0;
 bool fin = false;
 
 using namespace std;
+using namespace sf;
 
 void Board::createBaseWindow(int maxx, int maxy)
 {
@@ -51,14 +53,6 @@ void Board::createBaseWindow(int maxx, int maxy)
 				tab[i][j] = cvertical;
 		}
 	}
-
-	//words
-	write("SCORE", 12, 1);
-	write("SPEED", 12, 3);
-	write("NEXT", 12, 6);
-	write("BLOCK", 12, 7);
-	write("0", 21, 1);
-	write("0", 21, 3);
 }
 
 void Board::write(string word, int posx, int posy)
@@ -71,10 +65,10 @@ void Board::write(string word, int posx, int posy)
 
 bool Board::game()
 {
-	size_t time = 0;
+	//size_t time = 0;
 	int score = 0;
-	int speed = 150;
-	size_t sleepTime = 60000 / speed;
+	int speed = 100;
+	//size_t sleepTime = 60000 / speed;
 	int speedChanger = 0;
 	bool gameOver = false;
 	int nextBlockType = getBlockType();
@@ -83,118 +77,248 @@ bool Board::game()
 	bool spaceBlocked = false;
 	bool arrowDownBlocked = false;
 
+	Clock clock;
+	float timer = 0, delay = (50.0 / speed);
+
 	Block bl;
 	bl.blockType = 0;
 	bl.rotation = 1;
 
 	createBaseWindow(windowWidth, windowHeight);
 	cleanBoard();
-	drawBoard(windowWidth, windowHeight);
-	copy(&tab[0][0], &tab[windowWidth-1][windowHeight-1], &prevtab[0][0]);
 
-		while (!gameOver)
+
+	RenderWindow window(VideoMode(690, 540), "Tetris");
+	window.setVerticalSyncEnabled(true);
+	window.setFramerateLimit(60);
+
+	Texture blocks;
+	blocks.loadFromFile("texture.png");
+
+	//corners
+	Sprite topleftsprite(blocks);
+	topleftsprite.setTextureRect(IntRect(0, 0, 30, 30));
+	Sprite toprightsprite(blocks);
+	toprightsprite.setTextureRect(IntRect(60, 0, 90, 30));
+	Sprite bottomleftsprite(blocks);
+	bottomleftsprite.setTextureRect(IntRect(0, 60, 30, 90));
+	Sprite bottomrightsprite(blocks);
+	bottomrightsprite.setTextureRect(IntRect(60, 60, 90, 90));
+
+	//lines
+	Sprite vertical(blocks);
+	vertical.setTextureRect(IntRect(90, 30, 120, 60));
+	Sprite horizontal(blocks);
+	horizontal.setTextureRect(IntRect(90, 0, 120, 30));
+
+	//T-shape corners
+	Sprite top(blocks);
+	top.setTextureRect(IntRect(30, 0, 60, 30));
+	Sprite left(blocks);
+	left.setTextureRect(IntRect(0, 30, 30, 60));
+	Sprite middle(blocks);
+	middle.setTextureRect(IntRect(30, 30, 60, 60));
+	Sprite right(blocks);
+	right.setTextureRect(IntRect(60, 30, 90, 60));
+	Sprite bottom(blocks);
+	bottom.setTextureRect(IntRect(30, 60, 60, 90));
+
+	//colors
+	Sprite red(blocks); //done blocks
+	red.setTextureRect(IntRect(90, 60, 120, 90));
+	Sprite yellow(blocks);
+	yellow.setTextureRect(IntRect(0, 90, 30, 120));
+	Sprite white(blocks); //background
+	white.setTextureRect(IntRect(30, 90, 60, 120));
+	Sprite green(blocks);
+	green.setTextureRect(IntRect(60, 90, 90, 120));
+	Sprite orange(blocks); //current block
+	orange.setTextureRect(IntRect(90, 90, 120, 120));
+
+	//ustawienie tekstów na planszy
+	Font font;
+	font.loadFromFile("Arial.ttf");
+
+	Text scoreLabelText, speedLabelText, nextText, blockText, scoreText, speedText;
+
+	scoreLabelText.setFont(font);
+	scoreLabelText.setFillColor(Color::Black);
+	scoreLabelText.setString("SCORE");
+	scoreLabelText.setPosition(12 * 30, 1 * 30);
+
+	speedLabelText.setFont(font);
+	speedLabelText.setFillColor(Color::Black);
+	speedLabelText.setString("SPEED");
+	speedLabelText.setPosition(12 * 30, 3 * 30);
+
+	nextText.setFont(font);
+	nextText.setFillColor(Color::Black);
+	nextText.setString("NEXT");
+	nextText.setPosition(12 * 30, 6 * 30);
+
+	blockText.setFont(font);
+	blockText.setFillColor(Color::Black);
+	blockText.setString("BLOCK");
+	blockText.setPosition(12 * 30, 7 * 30);
+
+	scoreText.setFont(font);
+	scoreText.setFillColor(Color::Black);
+	scoreText.setString("0");
+	scoreText.setPosition(21 * 30, 1 * 30);
+
+	speedText.setFont(font);
+	speedText.setFillColor(Color::Black);
+	speedText.setString("0");
+	speedText.setPosition(21 * 30, 3 * 30);
+
+	//skopiowanie tablic
+	copy(&tab[0][0], &tab[windowWidth - 1][windowHeight - 1], &prevtab[0][0]);
+
+	bool breaked = true;
+	while (window.isOpen() && !gameOver)
+	{
+		window.clear(Color::White);
+		
+		float time = clock.getElapsedTime().asSeconds();
+		clock.restart();
+		timer += time;
+		if (breaked == true)
 		{
-			writeScore(score);
-			writeSpeed(speed);
+			writeScore(score, scoreText);
+			window.draw(scoreText);
+			writeSpeed(speed, speedText);
+			window.draw(speedText);
+			delay = (50.0 / speed);
+			speed++;
 			bl.setBlockType(nextBlockType);
 			bl.setRotation(nextRotation);
-			//bl.blockType = 1; //nextBlockType;
-			//bl.rotation = nextRotation;
 			nextBlockType = getBlockType();
 			nextRotation = getRotation();
 			//rysowanie nastepnego klocka
 			drawNextBlock(nextBlockType, nextRotation);
 			//rysowanie aktualnego klocka
-			//Block bl;
 			positionY = 4;
 			positionX = 4;
-			bool breaked = false;
 			//narysowanie figury w ustawieniu poczatkowym
 			int i2, j2;
-			for (int i = positionX; i < positionX+4; i++)
+			for (int i = positionX; i < positionX + 4; i++)
 			{
 				i2 = i - positionX;
-				for (int j = positionY; j > positionY-4; j--)
+				for (int j = positionY; j > positionY - 4; j--)
 				{
 					j2 = j - positionY + 3;
 					if (bl.getTile(bl.blockType, bl.rotation, j2, i2) == 1)
 					{
 						tab[i][j] = square;
 						prevtab[i][j] = square;
-						draw(square, i, j);
+						//draw(square, i, j);
 					}
 					else
 					{
 						tab[i][j] = nothing;
 						prevtab[i][j] = nothing;
-						draw(nothing, i, j);
+						//draw(nothing, i, j);
 					}
 				}
 			}
-			while (!breaked)
+		}
+		
+		
+		for (int j = 0; j < windowHeight; j++)
+		{
+			for (int i = 0; i < windowWidth; i++)
 			{
-				//ustawienie co ma byc narysowane
-				/*for (int i = 0; i < 4; i++)
+				switch (tab[i][j])
 				{
-					if (positionY < 5 && bl.getTile(bl.blockType, bl.rotation, 4 - positionY, i) == 1)
-						tab[i + positionX][1] = square;
-					else
-						tab[i + positionX][1] = nothing;
-				}*/
-				//rysowanie
-				for (int i = 1; i <= 10; i++)
-				{
-					if (tab[i][1] == square)
-					{
-						draw(square, i, 1);
-					}
-					else if (tab[i][1] != solid)
-					{
-						draw(nothing, i, 1);
-					}
-				}
-				
-				//sprawdzenie kolizji
-				for (int j = positionY; ((j >= 1) && j >= (positionY - 4)); j--)
-				{
-					for (int i = 1; i < 11; i++)
-					{
-						if (tab[i][j] == square && collision("down", i, j))
-						{
-							breaked = true;
-						}
-					}
-				}
-				copy(&tab[0][0], &tab[windowWidth-1][windowHeight-1], &prevtab[0][0]);
+				case ctopleft: topleftsprite.setPosition(i * 30, j * 30);
+					window.draw(topleftsprite); break;
 
-				//obsluga klawiatury
-				while (time < sleepTime)
-				{
-					if (GetKeyState(VK_SPACE)>=0 && GetKeyState(VK_UP)>=0 && spaceBlocked==true) 
-						spaceBlocked = false;
-					if (GetKeyState(VK_DOWN) >= 0)
-						arrowDownBlocked = false;
-					if (_kbhit())
-						keys(bl, spaceBlocked, arrowDownBlocked, time, sleepTime);
-					time++;
-					Sleep(1);
-				}
-				time = 0;
+				case ctopright: toprightsprite.setPosition(i * 30, j * 30);
+					window.draw(toprightsprite); break;
 
+				case cbottomleft: bottomleftsprite.setPosition(i * 30, j * 30);
+					window.draw(bottomleftsprite); break;
+
+				case cbottomright: bottomrightsprite.setPosition(i * 30, j * 30);
+					window.draw(bottomrightsprite); break;
+
+				case cvertical: vertical.setPosition(i * 30, j * 30);
+					window.draw(vertical); break;
+
+				case chorizontal: horizontal.setPosition(i * 30, j * 30);
+					window.draw(horizontal); break;
+
+				case ctop: top.setPosition(i * 30, j * 30);
+					window.draw(top); break;
+
+				case cleft: left.setPosition(i * 30, j * 30);
+					window.draw(left); break;
+
+				case cmiddle: middle.setPosition(i * 30, j * 30);
+					window.draw(middle); break;
+
+				case cright: right.setPosition(i * 30, j * 30);
+					window.draw(right); break;
+
+				case cbottom: bottom.setPosition(i * 30, j * 30);
+					window.draw(bottom); break;
+
+				case square: orange.setPosition(i * 30, j * 30);
+					window.draw(orange); break;
+
+				case solid: red.setPosition(i * 30, j * 30);
+					window.draw(red); break;
+
+				case nothing: white.setPosition(i * 30, j * 30);
+					window.draw(white); break;
+
+				default: white.setPosition(i * 30, j * 30);
+					window.draw(white); break;
+				}
+			}
+		}
+		window.draw(scoreLabelText);
+		window.draw(speedLabelText);
+		window.draw(nextText);
+		window.draw(blockText);
+		window.draw(scoreText);
+		window.draw(speedText);
+
+		//end of drawing
+
+		
+		//while (!breaked)
+		breaked = false;
+		if (1 == 1)
+		{
+			//sprawdzenie kolizji
+			for (int j = positionY; ((j >= 1) && j >= (positionY - 4)); j--)
+			{
+				for (int i = 1; i < 11; i++)
+				{
+					if (tab[i][j] == square && collision("down", i, j))
+					{
+						breaked = true;
+					}
+				}
+			}
+			copy(&tab[0][0], &tab[windowWidth - 1][windowHeight - 1], &prevtab[0][0]);
+
+			if (timer>delay)
+			{
+				timer = 0;
 				if (!breaked)
 				{
 					copyx(positionY);
+					
 				}
+
 				positionY++;
 			}
-
-			arrowDownBlocked = true; //po dojechaniu klocka do dolu, strzalka w dol jest blokowana aby niechcacy nie przejechac w dol kilkoma kolejnymi figurami
-			speedChanger++;
-			if (speedChanger >= 1)
-			{
-				speed++;
-				speedChanger = 0;
-			}
+				
+		}
+		if (breaked)
+		{
 			//zamiana wszystkich klockow na wyglad juz ulozonych (aby potem odrozniac od nich latajace)
 			for (int j = 1; j <= 16; j++)
 			{
@@ -204,18 +328,40 @@ bool Board::game()
 					{
 						tab[i][j] = solid;
 						prevtab[i][j] = solid;
-						draw(solid, i, j);
+						//draw(solid, i, j);
+						//red.setPosition(i * 30, j * 30);
 					}
 				}
 			}
+
 			//dodanie pkt
 			score += countPoints();
 			//usuniecie rzedow
 			deleteRows();
 			gameOver = isOver();
 		}
-		fin = drawResult(score);
-		return fin;
+		
+		Event event;
+		while (window.pollEvent(event))
+		{
+			if (event.type == Event::Closed)
+				window.close();
+			if (event.type == Event::KeyPressed && event.key.code == Keyboard::Left)
+				moveleft();
+			if (event.type == Event::KeyPressed && event.key.code == Keyboard::Right)
+				moveright();
+			if (event.type == Event::KeyPressed && (event.key.code == Keyboard::Space || event.key.code == Keyboard::Up))
+				rotate(bl.blockType, bl.rotation, bl);
+			if (event.type == Event::KeyPressed && event.key.code == Keyboard::Down)
+				timer = delay;
+
+		} //while
+		
+		window.display();
+	} //while
+
+	fin = drawResult(score);
+	return fin;
 }
 
 void Board::copyx(int posy)
@@ -229,8 +375,8 @@ void Board::copyx(int posy)
 				tab[i][j + 1] = tab[i][j];
 				tab[i][j] = nothing;
 
-				draw(tab[i][j + 1], i, j + 1);
-				draw(nothing, i, j);
+				//draw(tab[i][j + 1], i, j + 1);
+				//draw(nothing, i, j);
 
 			}
 		}
@@ -433,81 +579,43 @@ void Board::moveright()
 
 void Board::cleanBoard()
 {
-	/*for (int j = 0; j < windowHeight; j++)
-	{
-		for (int i = 0; i < windowWidth; i++)
-		{
-			//if (tab[i][j] == NULL || tab[i][j] == solid)
-				tab[i][j] = nothing;
-			prevtab[i][j] = nothing;
-		}
-	}*/
-	
 	for (int j = 1; j <= 16; j++)
 	{
 		for (int i = 1; i <=10; i++)
 		{
-			//if (tab[i][j] == NULL || tab[i][j] == solid)
 			tab[i][j] = nothing;
 			prevtab[i][j] = nothing;
 		}
 	}
 }
 
-void Board::writeScore(int sc)
+void Board::writeScore(int sc, Text &text)
 {
 	string strScore = to_string(sc);
-
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 1);
+	text.setString(strScore);
 	if (sc / 1000 > 0)
-	{
-		setCursorPosition(18, 1);
-		cout << strScore;
-	}
+		text.setPosition(18 * 30, 1 * 30);
 	else if (sc / 100 > 0)
-	{
-		setCursorPosition(19, 1);
-		cout << strScore;
-	}
+		text.setPosition(19 * 30, 1 * 30);
 	else if (sc / 10 > 0)
-	{
-		setCursorPosition(20, 1);
-		cout << strScore;
-	}
+		text.setPosition(20 * 30, 1 * 30);
 	else
-	{
-		setCursorPosition(21, 1);
-		cout << strScore;
-	}
+		text.setPosition(21 * 30, 1 * 30);
 
 }
 
-void Board::writeSpeed(int sp)
+void Board::writeSpeed(int sp, Text &text)
 {
 	string strSpeed = to_string(sp);
-
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 1);
+	text.setString(strSpeed);
 	if (sp / 1000 > 0)
-	{
-		setCursorPosition(18, 3);
-		cout << strSpeed;
-	}
+		text.setPosition(18 * 30, 3 * 30);
 	else if (sp / 100 > 0)
-	{
-		setCursorPosition(19, 3);
-		cout << strSpeed;
-	}
+		text.setPosition(19 * 30, 3 * 30);
 	else if (sp / 10 > 0)
-	{
-		setCursorPosition(20, 3);
-		cout << strSpeed;
-	}
+		text.setPosition(20 * 30, 3 * 30);
 	else
-	{
-		setCursorPosition(21, 3);
-		cout << strSpeed;
-	}
-
+		text.setPosition(21 * 30, 3 * 30);
 }
 
 int Board::countPoints()
@@ -558,7 +666,7 @@ void Board::deleteRows()
 				tab[i][j] = deleted;
 				prevtab[i][j] = deleted;
 
-				draw(tab[i][j], i, j);
+				//draw(tab[i][j], i, j);
 
 			}
 		}
@@ -578,7 +686,7 @@ void Board::deleteRows()
 						tab[i][k] = tab[i][k - 1];
 						prevtab[i][k] = prevtab[i][k - 1];
 
-						draw(tab[i][k], i, k);
+						//draw(tab[i][k], i, k);
 
 					}
 				}
@@ -734,9 +842,11 @@ void Board::drawNextBlock(int type, int rotation)
 		{
 
 			if (nextB.getTile(type, rotation, j, i) == 1)
-				draw(square, i + 18, j + 5);
+				tab[i + 18][j + 5] = square;
+				//draw(square, i + 18, j + 5);
 			else
-				draw(nothing, i + 18, j + 5);
+				tab[i + 18][j + 5] = nothing;
+				//draw(nothing, i + 18, j + 5);
 
 		}
 	}

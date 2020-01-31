@@ -3,6 +3,7 @@
 #include <iostream>
 #include "block.h"
 using namespace std;
+using namespace sf;
 
 class Board
 {
@@ -22,8 +23,8 @@ public:
 	void moveleft();
 	void moveright();
 	void cleanBoard();
-	void writeScore(int sc);
-	void writeSpeed(int sp);
+	void writeScore(int sc, Text &text);
+	void writeSpeed(int sp, Text &text);
 	int countPoints();
 	void deleteRows();
 	bool isOver();
