@@ -30,9 +30,84 @@ void cleanScreen()
 {
 	system("cls");
 }
-/*
+
 int drawMainMenu()
 {
+	RenderWindow window(sf::VideoMode(690, 540), "Tetris");
+	window.setVerticalSyncEnabled(true);
+	window.setFramerateLimit(60);
+
+	Texture mainmenu;
+	mainmenu.loadFromFile("mainmenu.png");
+	Texture button;
+	button.loadFromFile("button-bg.png");
+	Texture blocks;
+	blocks.loadFromFile("texture.png");
+
+	Font font;
+	font.loadFromFile("Arial.ttf");
+
+	Text playGame, quit;
+
+	playGame.setFont(font);
+	playGame.setFillColor(Color::Red);
+	playGame.setString("PLAY GAME");
+	playGame.setPosition(260, 250);
+
+	quit.setFont(font);
+	quit.setFillColor(Color::White);
+	quit.setString("QUIT");
+	quit.setPosition(310, 340);
+
+	Sprite sMenu(mainmenu);
+	Sprite button1(button);
+	Sprite button2(button);
+	Sprite s(blocks);
+
+	button1.setPosition(240, 240);
+	button2.setPosition(240, 330);
+
+	s.setTextureRect(IntRect(0, 0, 30, 30));
+
+	bool playOption = true;
+	bool quitOption = false;
+
+	while (window.isOpen())
+	{
+		sf::Event event;
+		while (window.pollEvent(event))
+		{
+			if (event.type == sf::Event::Closed)
+				window.close();
+			if (event.type == sf::Event::KeyPressed && (event.key.code == Keyboard::Down || event.key.code == Keyboard::Up))
+			{
+				if (quitOption)
+				{
+					playOption = true;
+					quitOption = false;
+					playGame.setFillColor(Color::Red);
+					quit.setFillColor(Color::White);
+				}
+				else if (playOption)
+				{
+					playOption = false;
+					quitOption = true;
+					playGame.setFillColor(Color::White);
+					quit.setFillColor(Color::Red);
+				}
+			}
+
+		} //while
+		//window.clear(Color::White);
+		window.draw(sMenu);
+		window.draw(button1);
+		window.draw(playGame);
+		window.draw(button2);
+		window.draw(quit);
+
+		window.display();
+	} //while
+	/*
 	cleanScreen();
 	int tetris[9][23] =
 	{
@@ -147,9 +222,10 @@ int drawMainMenu()
 		default: break;
 		}
 	}
-
+*/
+return 1;
 }
-
+/*
 void clearArray()
 {
 	for (int i = 0; i < windowWidth; i++)
@@ -163,58 +239,7 @@ void clearArray()
 */
 int main()
 {
-	RenderWindow window(sf::VideoMode(690, 540), "Tetris");
-	window.setVerticalSyncEnabled(true);
-	window.setFramerateLimit(60);
-
-	Texture mainmenu;
-	mainmenu.loadFromFile("mainmenu.png");
-	Texture button;
-	button.loadFromFile("button-bg.png");
-	Texture blocks;
-	blocks.loadFromFile("texture.png");
-
-	Font font;
-	font.loadFromFile("Arial.ttf");
-
-	Text playGame, quit;
-	playGame.setFont(font);
-	playGame.setFillColor(Color::White);
-	playGame.setString("PLAY GAME");
-	playGame.setPosition(260, 250);
-
-	quit.setFont(font);
-	quit.setFillColor(Color::White);
-	quit.setString("QUIT");
-	quit.setPosition(310, 340);
 	
-	Sprite sMenu(mainmenu);
-	Sprite button1(button);
-	Sprite button2(button);
-	Sprite s(blocks);
-
-	button1.setPosition(240, 240);
-	button2.setPosition(240, 330);
-
-	s.setTextureRect(IntRect(0, 0, 30, 30));
-	while (window.isOpen())
-	{
-		sf::Event event;
-		while (window.pollEvent(event))
-		{
-			if (event.type == sf::Event::Closed)
-				window.close();
-
-		} //while
-		//window.clear(Color::White);
-		window.draw(sMenu);
-		window.draw(button1);
-		window.draw(playGame);
-		window.draw(button2);
-		window.draw(quit);
-
-		window.display();
-	} //while
 
 	/*
 	//SETTING FONT SIZE
@@ -239,12 +264,10 @@ int main()
 	cursorInfo.bVisible = false;
 	SetConsoleCursorInfo(out, &cursorInfo);*/
 
-	/* TODO
+	
 	while (1)
 	{
-		cleanScreen();
-		//SETTING FONT COLOR
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 1);
+		//cleanScreen();
 		int res = drawMainMenu();
 		if (res == 1)
 		{
@@ -253,19 +276,14 @@ int main()
 			bool playAgain = true;
 			while (playAgain)
 			{
-				clearArray();
-				//SETTING FONT COLOR
-				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 1);
-				cleanScreen();
+				//clearArray();
+				//cleanScreen();
 				playAgain = b.game();
 			}
-			//thread th2(doKeys, &b);
-			//th1.join();
-			//th2.join();
 		}
 		else if (res == 2)
 			return 0;
 	}
-	*/
+	
 	return 0;
 }
